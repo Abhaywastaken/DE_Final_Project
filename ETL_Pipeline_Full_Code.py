@@ -139,39 +139,4 @@ def load_data(**context):
     conn.close()
 
 
-# ------------------------- DAG -------------------------
-default_args = {
-    "owner": "mehjabin",
-    "start_date": datetime(2025, 1, 1),
-}
 
-with DAG(
-    dag_id="weather_etl_pipeline",
-    schedule_interval="@daily",
-    default_args=default_args,
-    catchup=False,
-) as dag:
-
-    extract = PythonOperator(
-        task_id="extract_data",
-        python_callable=extract_data,
-    )
-
-    transform = PythonOperator(
-        task_id="transform_data",
-        python_callable=transform_data,
-    )
-
-    validate = PythonOperator(
-        task_id="validate_data",
-        python_callable=validate_data,
-        trigger_rule=TriggerRule.ALL_SUCCESS,
-    )
-
-    load = PythonOperator(
-        task_id="load_data",
-        python_callable=load_data,
-        trigger_rule=TriggerRule.ALL_SUCCESS,
-    )
-
-    extract >> transform >> validate >> load
